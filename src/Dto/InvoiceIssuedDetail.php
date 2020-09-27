@@ -174,22 +174,6 @@ class InvoiceIssuedDetail
     private $orderId;
 
     /**
-     * ID zálohových faktur
-     *
-     * @var array
-     */
-    private $proformaInvoiceIds;
-
-    /** @var bool */
-    private $eet;
-
-    /** @var BusinessPremisesDetail */
-    private $businessPremises;
-
-    /** @var array */
-    private $eetStatus;
-
-    /**
      * @param mixed[] $arrayData input data
      */
     public function __construct(array $arrayData)
@@ -226,17 +210,6 @@ class InvoiceIssuedDetail
         $this->accounted = Utils::getValueOrNull($arrayData, 'accounted');
         $this->deleted = Utils::getValueOrNull($arrayData, 'deleted');
         $this->orderId = Utils::getValueOrNull($arrayData, 'order_id');
-        if (array_key_exists('proforma_invoice', $arrayData)) {
-            foreach ($arrayData['proforma_invoice'] as $itemData) {
-                $this->proformaInvoiceIds[] = $itemData;
-            }
-        }
-
-        $this->eet = Utils::getValueOrNull($arrayData, 'eet');
-        if (isset($arrayData['business_premises']) && !empty($arrayData['business_premises'])) {
-            $this->businessPremises = new BusinessPremisesDetail($arrayData['business_premises']);
-        }
-        $this->eetStatus = Utils::getValueOrNull($arrayData, 'eet_status');
     }
 
     public function getId()
@@ -356,35 +329,5 @@ class InvoiceIssuedDetail
     {
         return $this->orderId;
     }
-
-    public function getProformaInvoiceIds()
-    {
-        return $this->proformaInvoiceIds;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isEet()
-    {
-        return $this->eet;
-    }
-
-    /**
-     * @return BusinessPremisesDetail
-     */
-    public function getBusinessPremises()
-    {
-        return $this->businessPremises;
-    }
-
-    /**
-     * @return array
-     */
-    public function getEetStatus()
-    {
-        return $this->eetStatus;
-    }
-
 
 }
