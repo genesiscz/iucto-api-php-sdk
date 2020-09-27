@@ -97,6 +97,16 @@ class InvoiceIsseudOverview
     private $deleted;
 
     /**
+     * ID zálohových faktur
+     *
+     * @var array
+     */
+    private $proformaInvoiceIds;
+
+    /** @var bool */
+    private $eet;
+
+    /**
      * @param mixed[] $arrayData input data
      */
     public function __construct(array $arrayData)
@@ -113,6 +123,13 @@ class InvoiceIsseudOverview
         $this->customer = new CustomerOverview($arrayData['customer']);
         $this->accounted = Utils::getValueOrNull($arrayData, 'accounted');
         $this->deleted = Utils::getValueOrNull($arrayData, 'deleted');
+        if (array_key_exists('proforma_invoice', $arrayData)) {
+            foreach ($arrayData['proforma_invoice'] as $itemData) {
+                $this->proformaInvoiceIds[] = $itemData;
+            }
+        }
+
+        $this->eet = Utils::getValueOrNull($arrayData, 'eet');
     }
 
     public function getId()
@@ -175,4 +192,13 @@ class InvoiceIsseudOverview
         return $this->deleted;
     }
 
+    public function getProformaInvoiceIds()
+    {
+        return $this->proformaInvoiceIds;
+    }
+
+    public function isEet()
+    {
+        return $this->eet;
+    }
 }
