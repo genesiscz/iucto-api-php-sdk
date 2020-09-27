@@ -15,42 +15,42 @@ class SupplierOverview
      *
      * @var int
      */
-    protected $id;
+    private $id;
 
     /**
      * Jméno zákazníka
      *
      * @var string
      */
-    protected $name;
+    private $name;
 
     /**
      * IČ
      *
      * @var string
      */
-    protected $comid;
+    private $comid;
 
     /**
      * DIČ
      *
      * @var string
      */
-    protected $vatid;
+    private $vatid;
 
     /**
      * Plátce DPH (ano/ne)
      *
      * @var bool
      */
-    protected $vatPayer;
+    private $vatPayer;
 
     /**
      * Email
      *
      * @var string
      */
-    protected $email;
+    private $email;
 
     /**
      * @param mixed[] $arrayData input data

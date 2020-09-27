@@ -2,8 +2,6 @@
 
 namespace IUcto\Dto;
 
-use IUcto\Utils;
-
 /**
  * DTO for PaymentIssuedOverview data
  *
@@ -18,11 +16,6 @@ class PaymentReceivedOverview extends PaymentOverview
     protected $invoice;
 
     /**
-     * @var bool
-     */
-    protected $eet;
-
-    /**
      * @param mixed[] $arrayData input data
      */
     public function __construct(array $arrayData)
@@ -33,8 +26,6 @@ class PaymentReceivedOverview extends PaymentOverview
         } else {
             $this->invoice = null;
         }
-
-        $this->eet = Utils::getValueOrNull($arrayData, 'eet');
     }
 
     /**
@@ -44,14 +35,4 @@ class PaymentReceivedOverview extends PaymentOverview
     {
         return $this->invoice;
     }
-
-    /**
-     * @return bool
-     */
-    public function isEet()
-    {
-        return $this->eet;
-    }
-
-
 }

@@ -5,9 +5,11 @@ namespace IUcto\Dto;
 use IUcto\Utils;
 
 /**
+ * DTO for PaymentDetail data
+ *
  * @author iucto.cz
  */
-abstract class PaymentDetail
+class PaymentDetail
 {
 
     /**
@@ -15,98 +17,98 @@ abstract class PaymentDetail
      *
      * @var int(11)
      */
-    protected $id;
+    private $id;
 
     /**
      * Číslo dokladu
      *
      * @var string (45)
      */
-    protected $sequenceCode;
+    private $sequenceCode;
 
     /**
      * Variabilní symbol
      *
      * @var string (42)
      */
-    protected $variableSymbol;
+    private $variableSymbol;
 
     /**
      * Datum vystavení (formát YYYY-mm-dd)
      *
      * @var string
      */
-    protected $date;
+    private $date;
 
     /**
      * Datum zdanitelného plnění (formát YYYY-mm-dd)
      *
      * @var string
      */
-    protected $dateVat;
+    private $dateVat;
 
     /**
      * Datum splatnosti (formát YYYY-mm-dd)
      *
      * @var string
      */
-    protected $maturityDate;
+    private $maturityDate;
 
     /**
      * Měna dokladu
      *
      * @var string (3)
      */
-    protected $currency;
+    private $currency;
 
     /**
      * Celková částka bez DPH
      *
      * @var int(11)
      */
-    protected $price;
+    private $price;
 
     /**
      * Celková částka v CZK bez DPH
      *
      * @var int(11)
      */
-    protected $priceCzk;
+    private $priceCzk;
 
     /**
      * Celková částka s DPH
      *
      * @var int(11)
      */
-    protected $priceIncVat;
+    private $priceIncVat;
 
     /**
      * Celková částka v CZK s DPH
      *
      * @var int(11)
      */
-    protected $priceIncVatCzk;
+    private $priceIncVatCzk;
 
     /**
      * Zbývající částka k úhradě (v měně dokladu)
      *
      * @var int
      */
-    protected $toBePaid;
+    private $toBePaid;
 
     /**
      * Zákazník
      *
      * @var Customer
      */
-    protected $customer;
+    private $customer;
 
     /**
      * Dodavatel
      *
      * @var Supplier
      */
-    protected $supplier;
+    private $supplier;
 
 
     /**
@@ -114,70 +116,70 @@ abstract class PaymentDetail
      *
      * @var string (45)
      */
-    protected $customerBankAccount;
+    private $customerBankAccount;
 
     /**
      * Forma úhrady
      *
      * @var int(1)
      */
-    protected $paymentType;
+    private $paymentType;
 
     /**
      * Bankovního účet pro příjem platby
      *
      * @var BankAccount
      */
-    protected $bankAccount;
+    private $bankAccount;
 
     /**
      * Pokladna
      *
      * @var CashRegister
      */
-    protected $cash_register;
+    private $cash_register;
 
     /**
      * Datum zdanitelného plnění
      *
      * @var string
      */
-    protected $dateVatPrev;
+    private $dateVatPrev;
 
     /**
      * Poznámka
      *
      * @var string
      */
-    protected $description;
+    private $description;
 
     /**
      * Způsob zaokrouhlení
      *
      * @var string
      */
-    protected $roundingType;
+    private $roundingType;
 
     /**
      * Položky dokladu
      *
      * @var DocumentItem[]
      */
-    protected $items = array();
+    private $items = array();
 
     /**
      * Doklad je zaúčtován
      *
      * @var bool
      */
-    protected $accounted;
+    private $accounted;
 
     /**
      * Doklad je smazaný
      *
      * @var bool
      */
-    protected $deleted;
+    private $deleted;
 
     /**
      * @param mixed[] $arrayData input data

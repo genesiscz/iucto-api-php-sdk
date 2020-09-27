@@ -3,7 +3,6 @@
 namespace IUcto\Command;
 
 use IUcto\Dto\Address;
-use IUcto\Utils;
 
 /**
  * Description of SaveSupplier
@@ -140,13 +139,6 @@ class SaveSupplier
      */
     private $accountNumber4;
 
-    /**
-     * ID skupiny dodavatelů
-     *
-     * @var int
-     */
-    private $supplierGroupId;
-
     function __construct(array $arrayData = [])
     {
         if (empty($arrayData)) {
@@ -171,7 +163,6 @@ class SaveSupplier
         $this->accountNumber2 = $arrayData['account_number2'];
         $this->accountNumber3 = $arrayData['account_number3'];
         $this->accountNumber4 = $arrayData['account_number4'];
-        $this->supplierGroupId = Utils::getValueOrNull($arrayData, 'supplier_group_id');
     }
 
     public function getName()
@@ -264,14 +255,6 @@ class SaveSupplier
         return $this->accountNumber4;
     }
 
-    /**
-     * @return int
-     */
-    public function getSupplierGroupId()
-    {
-        return $this->supplierGroupId;
-    }
-
     public function setName($name)
     {
         $this->name = $name;
@@ -362,14 +345,6 @@ class SaveSupplier
         $this->accountNumber4 = $accountNumber4;
     }
 
-    /**
-     * @param int $supplierGroupId
-     */
-    public function setSupplierGroupId($supplierGroupId)
-    {
-        $this->supplierGroupId = $supplierGroupId;
-    }
-
     public function toArray()
     {
         return array(
@@ -390,8 +365,7 @@ class SaveSupplier
             'account_number1' => $this->accountNumber1,
             'account_number2' => $this->accountNumber2,
             'account_number3' => $this->accountNumber3,
-            'account_number4' => $this->accountNumber4,
-            'supplier_group_id' => $this->supplierGroupId);
+            'account_number4' => $this->accountNumber4);
     }
 
 }

@@ -10,7 +10,6 @@ use IUcto\Utils;
  * Comman object pro uložení dokumentu
  *
  * @author iucto.cz
- * @deprecated Použijte SavePaymentIssued a SavePaymentReceived
  */
 class SavePayment
 {
@@ -20,21 +19,21 @@ class SavePayment
      *
      * @var string (42)
      */
-    protected $variableSymbol;
+    private $variableSymbol;
 
     /**
      * Datum vystavení (povinné) (formát YYYY-mm-dd)
      *
      * @var \DateTime
      */
-    protected $date;
+    private $date;
 
     /**
      * Datum zdanitelného plnění (povinné) (formát YYYY-mm-dd)
      *
      * @var \DateTime
      */
-    protected $dateVat;
+    private $dateVat;
 
     /**
      * Měna dokladu (povinné)
@@ -42,7 +41,7 @@ class SavePayment
      *
      * @var string (3)
      */
-    protected $currency;
+    private $currency;
 
     /**
      * Zákazník (povinné)
@@ -50,17 +49,17 @@ class SavePayment
      *
      * @var int
      */
-    protected $customerId;
+    private $customerId;
 
 
-    protected $supplierId;
+    private $supplierId;
 
     /**
      * Bankovní účet zákazníka
      *
      * @var string (45)
      */
-    protected $customerBankAccount;
+    private $customerBankAccount;
 
     /**
      * Forma úhrady
@@ -68,7 +67,7 @@ class SavePayment
      *
      * @var int(1)
      */
-    protected $paymentType;
+    private $paymentType;
 
     /**
      * Bankovního účet pro příjem platby (povinné pro platbu převodem)
@@ -76,27 +75,27 @@ class SavePayment
      *
      * @var int
      */
-    protected $bankAccount;
+    private $bankAccount;
 
     /**
      * Pokladna pro příjem platby (povinné pro platbu v hotovosti)
      * @var int
      */
-    protected $cash_register_id;
+    private $cash_register_id;
 
     /**
      * Datum zdanitelného plnění (formát YYYY-mm-dd)
      *
      * @var string
      */
-    protected $dateVatPrev;
+    private $dateVatPrev;
 
     /**
      * Poznámka
      *
      * @var string
      */
-    protected $description;
+    private $description;
 
     /**
      * Způsob zaokrouhlení
@@ -105,19 +104,19 @@ class SavePayment
      *
      * @var string
      */
-    protected $roundingType;
+    private $roundingType;
 
     /**
      * Položky dokladu (povinné)
      *
      * @var IUcto\Dto\DocumentItem[]
      */
-    protected $items = array();
+    private $items = array();
 
     /**
      * @var int|null
      */
-    protected $invoiceId;
+    private $invoiceId;
 
     public function __construct(array $dataArray = [])
     {
