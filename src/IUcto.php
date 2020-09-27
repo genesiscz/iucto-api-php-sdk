@@ -2,11 +2,17 @@
 
 namespace IUcto;
 
+use IUcto\Command\PayDocument;
 use IUcto\Command\SaveBankAccount;
 use IUcto\Command\SaveBankTransaction;
 use IUcto\Command\SaveCreditNoteIssued;
+use IUcto\Command\SaveCreditNoteReceived;
 use IUcto\Command\SaveCustomer;
+use IUcto\Command\SaveEetStatus;
 use IUcto\Command\SaveInventory;
+use IUcto\Command\SaveDepartment;
+use IUcto\Command\SaveDirectAccounting;
+use IUcto\Command\SaveContact;
 use IUcto\Command\SaveInvoiceIssued;
 use IUcto\Command\SaveInvoiceReceived;
 use IUcto\Command\SaveOrderIssued;
@@ -16,28 +22,42 @@ use IUcto\Command\SaveProduct;
 use IUcto\Command\SaveStockMovement;
 use IUcto\Command\SaveSupplier;
 use IUcto\Command\SaveWarehouse;
+use IUcto\Command\SaveProformaInvoiceReceived;
+use IUcto\Command\SaveProformaInvoiceIssued;
 use IUcto\Dto\BankAccount;
 use IUcto\Dto\BankAccountList;
 use IUcto\Dto\BankTransactionList;
 use IUcto\Dto\BankTransactionOverview;
+use IUcto\Dto\BusinessPremisesDetail;
+use IUcto\Dto\BusinessPremisesOverview;
 use IUcto\Dto\CashRegisterList;
 use IUcto\Dto\Contract;
 use IUcto\Dto\CreditNoteIsseudOverview;
 use IUcto\Dto\CreditNoteIssuedDetail;
+use IUcto\Dto\CreditNoteReceivedDetail;
+use IUcto\Dto\CreditNoteReceivedOverview;
 use IUcto\Dto\Customer;
 use IUcto\Dto\CustomerOverview;
+use IUcto\Dto\CustomerGroup;
 use IUcto\Dto\Department;
+use IUcto\Dto\DirectAccountingDetail;
+use IUcto\Dto\DirectAccountingOverview;
+use IUcto\Dto\EetStatusDetail;
+use IUcto\Dto\EetStatusOverview;
 use IUcto\Dto\InventoryDetail;
 use IUcto\Dto\InvoiceIsseudOverview;
 use IUcto\Dto\InvoiceIssuedDetail;
 use IUcto\Dto\InvoiceReceivedDetail;
 use IUcto\Dto\InvoiceReceivedOverview;
+use IUcto\Dto\JournalDetail;
+use IUcto\Dto\JournalOverview;
 use IUcto\Dto\OrderIssuedDetail;
 use IUcto\Dto\OrderIssuedOverview;
 use IUcto\Dto\OrderReceivedDetail;
 use IUcto\Dto\OrderReceivedOverview;
-use IUcto\Dto\PaymentDetail;
+use IUcto\Dto\PaymentIssuedDetail;
 use IUcto\Dto\PaymentIssuedOverview;
+use IUcto\Dto\PaymentReceivedDetail;
 use IUcto\Dto\PaymentReceivedOverview;
 use IUcto\Dto\ProductDetail;
 use IUcto\Dto\ProductOverview;
@@ -45,6 +65,11 @@ use IUcto\Dto\StockMovementDetail;
 use IUcto\Dto\StockMovementOverview;
 use IUcto\Dto\Supplier;
 use IUcto\Dto\SupplierOverview;
+use IUcto\Dto\SupplierGroup;
+use IUcto\Dto\ProformaInvoiceReceivedOverview;
+use IUcto\Dto\ProformaInvoiceReceivedDetail;
+use IUcto\Dto\ProformaInvoiceIssuedOverview;
+use IUcto\Dto\ProformaInvoiceIssuedDetail;
 use IUcto\Dto\WarehouseDetail;
 
 
@@ -134,6 +159,7 @@ class IUcto
      * @return InvoiceIsseudOverview[] - 2-úrovňové pole. První úroveň tvoří klíč typ dokladu.
      * @throws ConnectionException
      * @throws ValidationException
+     * @deprecated
      */
     public function getAllInvoiceIssued()
     {
@@ -160,14 +186,13 @@ class IUcto
      * @throws ConnectionException
      * @throws ValidationException
      */
-    public function getInvoiceIssued($page = null, $pageSize = null)
+    public function getInvoiceIssued($page = null, $pageSize = null, $filters = [])
     {
-        $params = [];
         if (isset($page) && isset($pageSize)) {
-            $params['page'] = $page;
-            $params['pageSize'] = $pageSize;
+            $filters['page'] = $page;
+            $filters['pageSize'] = $pageSize;
         }
-        $allData = $this->handleRequest('invoice_issued', Connector::GET, $params);
+        $allData = $this->handleRequest('invoice_issued', Connector::GET, $filters);
         $pageCount = isset($allData[Parser::PAGE_COUNT]) ? $allData[Parser::PAGE_COUNT] : 1;
         if (isset($allData[Parser::PAGE_COUNT])) {
             unset($allData[Parser::PAGE_COUNT]);
@@ -284,14 +309,13 @@ class IUcto
      * @throws ConnectionException
      * @throws ValidationException
      */
-    public function getInvoiceReceived($page = null, $pageSize = null)
+    public function getInvoiceReceived($page = null, $pageSize = null, $filters = [])
     {
-        $params = [];
         if (isset($page) && isset($pageSize)) {
-            $params['page'] = $page;
-            $params['pageSize'] = $pageSize;
+            $filters['page'] = $page;
+            $filters['pageSize'] = $pageSize;
         }
-        $allData = $this->handleRequest('invoice_received', Connector::GET, $params);
+        $allData = $this->handleRequest('invoice_received', Connector::GET, $filters);
         $pageCount = isset($allData[Parser::PAGE_COUNT]) ? $allData[Parser::PAGE_COUNT] : 1;
         if (isset($allData[Parser::PAGE_COUNT])) {
             unset($allData[Parser::PAGE_COUNT]);
@@ -372,9 +396,13 @@ class IUcto
      * @throws ConnectionException
      * @throws ValidationException
      */
-    public function getCustomers()
+    public function getCustomers($page = null, $pageSize = null, $filters = [])
     {
-        $allData = $this->handleRequest('customer', Connector::GET);
+        if (isset($page) && isset($pageSize)) {
+            $filters['page'] = $page;
+            $filters['pageSize'] = $pageSize;
+        }
+        $allData = $this->handleRequest('customer', Connector::GET, $filters);
 
         $allCustomers = array();
         if (isset($allData['customer'])) {
@@ -445,15 +473,37 @@ class IUcto
         $this->handleRequest('customer/' . $id, Connector::DELETE);
     }
 
+    /**
+     * Výpis dostupných skupin zakázníku.
+     *
+     * @return CustomerGroup[]
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function getCustomersGroup()
+    {
+        $allData = $this->handleRequest('customer_group', Connector::GET);
+
+        $customers = array();
+        foreach ($allData['customer_group'] as $data) {
+            $customers[] = new CustomerGroup($data);
+        }
+        return $customers;
+    }
 
     /**
      * @return array
      * @throws ConnectionException
      * @throws ValidationException
      */
-    public function getSuppliers()
+    public function getSuppliers($page = null, $pageSize = null, $filters = [])
     {
-        $allData = $this->handleRequest('supplier', Connector::GET);
+        if (isset($page) && isset($pageSize)) {
+            $filters['page'] = $page;
+            $filters['pageSize'] = $pageSize;
+        }
+
+        $allData = $this->handleRequest('supplier', Connector::GET, $filters);
 
         $allSuppliers = array();
         if (isset($allData['supplier'])) {
@@ -462,6 +512,24 @@ class IUcto
             }
         }
         return $allSuppliers;
+    }
+
+    /**
+     * Výpis dostupných skupin dodavatelů.
+     *
+     * @return SupplierGroup[]
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function getSuppliersGroup()
+    {
+        $allData = $this->handleRequest('supplier_group', Connector::GET);
+
+        $suppliers = array();
+        foreach ($allData['supplier_group'] as $data) {
+            $suppliers[] = new SupplierGroup($data);
+        }
+        return $suppliers;
     }
 
     /**
@@ -547,39 +615,39 @@ class IUcto
      * Vytvoří novú platbu, odpověd obsahuje detail platby.
      *
      * @param SavePayment $saveReceivedPayment
-     * @return PaymentDetail
+     * @return PaymentReceivedDetail
      * @throws ConnectionException
      * @throws ValidationException
      */
     public function createReceivedPayment(SavePayment $saveReceivedPayment)
     {
         $allData = $this->handleRequest('payment_received', Connector::POST, $saveReceivedPayment->toArray());
-        return new PaymentDetail($allData);
+        return new PaymentReceivedDetail($allData);
     }
 
     /**
      * @param $id
      * @param SavePayment $saveReceivedPayment
-     * @return PaymentDetail
+     * @return PaymentReceivedDetail
      * @throws ConnectionException
      * @throws ValidationException
      */
     public function updateReceivedPayment($id, SavePayment $saveReceivedPayment)
     {
         $allData = $this->handleRequest('payment_received/' . $id, Connector::PUT, $saveReceivedPayment->toArray());
-        return new PaymentDetail($allData);
+        return new PaymentReceivedDetail($allData);
     }
 
     /**
      * @param $id
-     * @return PaymentDetail
+     * @return PaymentReceivedDetail
      * @throws ConnectionException
      * @throws ValidationException
      */
     public function getReceivedPaymentDetail($id)
     {
         $allData = $this->handleRequest('payment_received/' . $id, Connector::GET);
-        return new PaymentDetail($allData);
+        return new PaymentReceivedDetail($allData);
     }
 
     /**
@@ -612,39 +680,39 @@ class IUcto
 
     /**
      * @param SavePayment $saveIssuedPayment
-     * @return PaymentDetail
+     * @return PaymentIssuedDetail
      * @throws ConnectionException
      * @throws ValidationException
      */
     public function createIssuedPayment(SavePayment $saveIssuedPayment)
     {
         $allData = $this->handleRequest('payment_issued', Connector::POST, $saveIssuedPayment->toArray());
-        return new PaymentDetail($allData);
+        return new PaymentIssuedDetail($allData);
     }
 
     /**
      * @param $id
      * @param SavePayment $saveIssuedPayment
-     * @return PaymentDetail
+     * @return PaymentIssuedDetail
      * @throws ConnectionException
      * @throws ValidationException
      */
     public function updateIssuedPayment($id, SavePayment $saveIssuedPayment)
     {
         $allData = $this->handleRequest('payment_issued/' . $id, Connector::PUT, $saveIssuedPayment->toArray());
-        return new PaymentDetail($allData);
+        return new PaymentIssuedDetail($allData);
     }
 
     /**
      * @param $id
-     * @return PaymentDetail
+     * @return PaymentIssuedDetail
      * @throws ConnectionException
      * @throws ValidationException
      */
     public function getIssuedPaymentDetail($id)
     {
         $allData = $this->handleRequest('payment_issued/' . $id, Connector::GET);
-        return new PaymentDetail($allData);
+        return new PaymentIssuedDetail($allData);
     }
 
     /**
@@ -856,6 +924,41 @@ class IUcto
     }
 
     /**
+     * @param SaveDepartment $saveDepartment
+     * @return Department
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function createDepartment(SaveDepartment $saveDepartment)
+    {
+        $allData = $this->handleRequest('department', Connector::POST, $saveDepartment->toArray());
+        return new Department($allData);
+    }
+
+    /**
+     * @param $id
+     * @param SaveDepartment $saveDepartment
+     * @return Department
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function updateDepartment($id, SaveDepartment $saveDepartment)
+    {
+        $allData = $this->handleRequest('department/' . $id, Connector::PUT, $saveDepartment->toArray());
+        return new Department($allData);
+    }
+
+    /**
+     * @param $id
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function deleteDepartment($id)
+    {
+        $this->handleRequest('department/' . $id, Connector::DELETE);
+    }
+
+    /**
      * Výpis dostupných zakázek.
      *
      * @return Contract[]
@@ -870,6 +973,41 @@ class IUcto
             $contracts[] = new Contract($data);
         }
         return $contracts;
+    }
+
+    /**
+     * @param SaveContract $saveContract
+     * @return Contract
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function createContract(SaveContract $saveContract)
+    {
+        $allData = $this->handleRequest('contract', Connector::POST, $saveContract->toArray());
+        return new Contract($allData);
+    }
+
+    /**
+     * @param $id
+     * @param SaveContract $saveContract
+     * @return Contract
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function updateContract($id, SaveContract $saveContract)
+    {
+        $allData = $this->handleRequest('contract/' . $id, Connector::PUT, $saveContract->toArray());
+        return new Contract($allData);
+    }
+
+    /**
+     * @param $id
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function deleteContract($id)
+    {
+        $this->handleRequest('contract/' . $id, Connector::DELETE);
     }
 
     /**
@@ -1104,7 +1242,7 @@ class IUcto
 
     /**
      * Seznam dobropisů vydaných
-     * @return CreditNoteIsseudOverview[]
+     * @return CreditNoteIssuedOverview[]
      * @throws ConnectionException
      * @throws ValidationException
      */
@@ -1167,6 +1305,183 @@ class IUcto
         $this->handleRequest('creditnote_issued/' . $id, Connector::DELETE);
     }
 
+    /**
+     * Zjednodušený výpis dostupných dokladů.
+     *
+     * @param int|null $page
+     * @param int|null $pageSize
+     * @return ProformaInvoiceReceivedOverview[] - 2-úrovňové pole.
+     *      První úroveň tvoří klíč typ dokladu a pod indexem \IUcto\Parser::PAGE_COUNT je počet dostupných stránek
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function getProformaInvoiceReceived($page = null, $pageSize = null)
+    {
+        $filters = array();
+        if (isset($page) && isset($pageSize)) {
+            $filters['page'] = $page;
+            $filters['pageSize'] = $pageSize;
+        }
+        $allData = $this->handleRequest('proforma_invoice_received', Connector::GET, $filters);
+        $pageCount = isset($allData[Parser::PAGE_COUNT]) ? $allData[Parser::PAGE_COUNT] : 1;
+        if (isset($allData[Parser::PAGE_COUNT])) {
+            unset($allData[Parser::PAGE_COUNT]);
+        }
+        $allDocuments = array();
+        $allDocuments[Parser::PAGE_COUNT] = $pageCount;
+        foreach ($allData as $type => $typeData) {
+            foreach ($typeData as $data) {
+                if (isset($data['href'])) {
+                    continue;
+                }
+                $allDocuments[$type][] = new ProformaInvoiceReceivedOverview($data);
+            }
+        }
+        return $allDocuments;
+    }
+
+    /**
+     * @param $id
+     * @return ProformaInvoiceReceivedDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function getProformaInvoiceReceivedDetail($id)
+    {
+        $allData = $this->handleRequest('proforma_invoice_received/' . $id, Connector::GET);
+        return new ProformaInvoiceReceivedDetail($allData);
+    }
+
+    /**
+     * Vytvoří nový doklad, odpověd obsahuje detail dokladu.
+     *
+     * @param SaveProformaInvoiceReceived $saveDocument
+     * @return ProformaInvoiceReceivedDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function createProformaInvoiceReceived(SaveProformaInvoiceReceived $saveDocument)
+    {
+        $allData = $this->handleRequest('proforma_invoice_received', Connector::POST, $saveDocument->toArray());
+        return new ProformaInvoiceReceivedDetail($allData);
+    }
+
+    /**
+     * Aktulizuje předané parametry vybraného dokladu. Poviné pole jsou stejná jako při vkládání nového záznamu.
+     *
+     * @param int $id
+     * @param SaveProformaInvoiceReceived $saveDocument
+     * @return ProformaInvoiceReceivedDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function updateProformaInvoiceReceived($id, SaveProformaInvoiceReceived $saveDocument)
+    {
+        $allData = $this->handleRequest('proforma_invoice_received/' . $id, Connector::PUT, $saveDocument->toArray());
+        return new ProformaInvoiceReceivedDetail($allData);
+    }
+
+    /**
+     * Pokusí se smazat vybranou zálohovou fakturu. Pokud je ovšem vázán na jiný záznam (faktura, platba, apod.), vrátí chybu a faktura se nasmaže.
+     *
+     * @param int $id
+     * @return void
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function deleteProformaInvoiceReceived($id)
+    {
+        $this->handleRequest('proforma_invoice_received/' . $id, Connector::DELETE);
+    }
+
+    /**
+     * Zjednodušený výpis dostupných dokladů.
+     *
+     * @param int|null $page
+     * @param int|null $pageSize
+     * @return ProformaInvoiceIssuedOverview[] - 2-úrovňové pole.
+     *      První úroveň tvoří klíč typ dokladu a pod indexem \IUcto\Parser::PAGE_COUNT je počet dostupných stránek
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function getProformaInvoiceIssued($page = null, $pageSize = null)
+    {
+        $filters = array();
+        if (isset($page) && isset($pageSize)) {
+            $filters['page'] = $page;
+            $filters['pageSize'] = $pageSize;
+        }
+        $allData = $this->handleRequest('proforma_invoice_issued', Connector::GET, $filters);
+        $pageCount = isset($allData[Parser::PAGE_COUNT]) ? $allData[Parser::PAGE_COUNT] : 1;
+        if (isset($allData[Parser::PAGE_COUNT])) {
+            unset($allData[Parser::PAGE_COUNT]);
+        }
+        $allDocuments = array();
+        $allDocuments[Parser::PAGE_COUNT] = $pageCount;
+        foreach ($allData as $type => $typeData) {
+            foreach ($typeData as $data) {
+                if (isset($data['href'])) {
+                    continue;
+                }
+                $allDocuments[$type][] = new ProformaInvoiceIssuedOverview($data);
+            }
+        }
+        return $allDocuments;
+    }
+
+    /**
+     * @param $id
+     * @return ProformaInvoiceIssuedDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function getProformaInvoiceIssuedDetail($id)
+    {
+        $allData = $this->handleRequest('proforma_invoice_issued/' . $id, Connector::GET);
+        return new ProformaInvoiceIssuedDetail($allData);
+    }
+
+    /**
+     * Vytvoří nový doklad, odpověd obsahuje detail dokladu.
+     *
+     * @param SaveProformaInvoiceIssued $saveDocument
+     * @return ProformaInvoiceIssuedDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function createProformaInvoiceIssued(SaveProformaInvoiceIssued $saveDocument)
+    {
+        $allData = $this->handleRequest('proforma_invoice_issued', Connector::POST, $saveDocument->toArray());
+        return new ProformaInvoiceIssuedDetail($allData);
+    }
+
+    /**
+     * Aktulizuje předané parametry vybraného dokladu. Poviné pole jsou stejná jako při vkládání nového záznamu.
+     *
+     * @param int $id
+     * @param SaveProformaInvoiceIssued $saveDocument
+     * @return ProformaInvoiceIssuedDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function updateProformaInvoiceIssued($id, SaveProformaInvoiceIssued $saveDocument)
+    {
+        $allData = $this->handleRequest('proforma_invoice_issued/' . $id, Connector::PUT, $saveDocument->toArray());
+        return new ProformaInvoiceIssuedDetail($allData);
+    }
+
+    /**
+     * Pokusí se smazat vybranou zálohovou fakturu. Pokud je ovšem vázán na jiný záznam (faktura, platba, apod.), vrátí chybu a faktura se nasmaže.
+     *
+     * @param int $id
+     * @return void
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function deleteProformaInvoiceIssued($id)
+    {
+        $this->handleRequest('proforma_invoice_issued/' . $id, Connector::DELETE);
+    }
     /**
      * Seznam skladů.
      *
@@ -1486,4 +1801,371 @@ class IUcto
     }
 
 
+    /**
+     * @param $id
+     * @param PayDocument $payDocument
+     * @return array|mixed|mixed[]|null
+     * @throws BadRequestException
+     * @throws ConnectionException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws PaymentRequiredException
+     * @throws ServerException
+     * @throws UnautorizedException
+     * @throws ValidationException
+     */
+    public function payProformaInvoiceIssued($id, PayDocument $payDocument)
+    {
+        $data = $this->handleRequest('proforma_invoice_issued/' . $id . '/pay', Connector::PUT, $payDocument->toArray());
+        return new PaymentIssuedDetail($data);
+    }
+
+    /**
+     * Účetní deník.
+     *
+     * @param array $params
+     * @param int|null $page
+     * @param int|null $pageSize
+     * @return JournalOverview[] - 2-úrovňové pole.
+     *      První úroveň tvoří klíč typ dokladu a pod indexem \IUcto\Parser::PAGE_COUNT je počet dostupných stránek
+     * @throws BadRequestException
+     * @throws ConnectionException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws PaymentRequiredException
+     * @throws ServerException
+     * @throws UnautorizedException
+     * @throws ValidationException
+     */
+    public function getJournalList($params = [], $page = null, $pageSize = null)
+    {
+        if (isset($page) && isset($pageSize)) {
+            $params['page'] = $page;
+            $params['pageSize'] = $pageSize;
+        }
+        $allData = $this->handleRequest('journal', Connector::GET, $params);
+        $pageCount = $allData[Parser::PAGE_COUNT];
+        unset($allData[Parser::PAGE_COUNT]);
+        $allRows = array();
+        $allRows[Parser::PAGE_COUNT] = $pageCount;
+        $allRows['journal'] = [];
+        foreach ($allData['journal'] as $data) {
+            if (isset($data['href'])) {
+                continue;
+            }
+            $journalOverview = new JournalOverview($data);
+            $allRows['journal'][$journalOverview->getId()] = $journalOverview;
+        }
+
+        return $allRows;
+    }
+
+    /**
+     * @param $id
+     * @return JournalDetail
+     * @throws BadRequestException
+     * @throws ConnectionException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws PaymentRequiredException
+     * @throws ServerException
+     * @throws UnautorizedException
+     * @throws ValidationException
+     */
+    public function getJournalDetail($id)
+    {
+        $allData = $this->handleRequest('journal/' . $id, Connector::GET);
+        return new JournalDetail($allData);
+    }
+    /**
+     *
+     * @param array $params
+     * @param int|null $page
+     * @param int|null $pageSize
+     * @return DirectAccountingOverview[] - 2-úrovňové pole.
+     *      První úroveň tvoří klíč typ dokladu a pod indexem \IUcto\Parser::PAGE_COUNT je počet dostupných stránek
+     * @throws BadRequestException
+     * @throws ConnectionException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws PaymentRequiredException
+     * @throws ServerException
+     * @throws UnautorizedException
+     * @throws ValidationException
+     */
+    public function getDirectAccountingList($params = [], $page = null, $pageSize = null)
+    {
+        if (isset($page) && isset($pageSize)) {
+            $params['page'] = $page;
+            $params['pageSize'] = $pageSize;
+        }
+        $allData = $this->handleRequest('direct_accounting', Connector::GET, $params);
+        $pageCount = $allData[Parser::PAGE_COUNT];
+        unset($allData[Parser::PAGE_COUNT]);
+        $allRows = array();
+        $allRows[Parser::PAGE_COUNT] = $pageCount;
+        $allRows['direct_accounting'] = [];
+        foreach ($allData['direct_accounting'] as $data) {
+            if (isset($data['href'])) {
+                continue;
+            }
+            $directAccountingDetail = new DirectAccountingOverview($data);
+            $allRows['direct_accounting'][$directAccountingDetail->getId()] = $directAccountingDetail;
+        }
+
+        return $allRows;
+    }
+
+    /**
+     * @param SaveDirectAccounting $saveDirectAccounting
+     * @return DirectAccountingDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function createDirectAccounting(SaveDirectAccounting $saveDirectAccounting)
+    {
+        $allData = $this->handleRequest('direct_accounting', Connector::POST, $saveDirectAccounting->toArray());
+        return new DirectAccountingDetail($allData);
+    }
+
+    /**
+     * @param $id
+     * @param SaveDirectAccounting $saveDirectAccounting
+     * @return DirectAccountingDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function updateDirectAccounting($id, SaveDirectAccounting $saveDirectAccounting)
+    {
+        $allData = $this->handleRequest('direct_accounting/' . $id, Connector::PUT, $saveDirectAccounting->toArray());
+        return new DirectAccountingDetail($allData);
+    }
+
+    /**
+     * @param $id
+     * @return DirectAccountingDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function getDirectAccountingDetail($id)
+    {
+        $allData = $this->handleRequest('direct_accounting/' . $id, Connector::GET);
+        return new DirectAccountingDetail($allData);
+    }
+
+    /**
+     * @param $id
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function deleteDirectAccounting($id)
+    {
+        $this->handleRequest('direct_accounting/' . $id, Connector::DELETE);
+    }
+
+    /**
+     * Seznam dobropisů přijatých
+     * @return CreditNoteReceivedOverview[]
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function getCreditNoteReceivedList($params = [], $page = null, $pageSize = null)
+    {
+        if (isset($page) && isset($pageSize)) {
+            $params['page'] = $page;
+            $params['pageSize'] = $pageSize;
+        }
+        $allData = $this->handleRequest('creditnote_received', Connector::GET, $params);
+        $pageCount = $allData[Parser::PAGE_COUNT];
+        unset($allData[Parser::PAGE_COUNT]);
+        $allRows = array();
+        $allRows[Parser::PAGE_COUNT] = $pageCount;
+        $allRows['creditnote_received'] = [];
+        foreach ($allData['creditnote_received'] as $data) {
+            if (isset($data['href'])) {
+                continue;
+            }
+            $creditNoteReceived = new CreditNoteReceivedOverview($data);
+            $allRows['creditnote_received'][$creditNoteReceived->getId()] = $creditNoteReceived;
+        }
+
+        return $allRows;
+    }
+
+    /**
+     * @param SaveCreditNoteReceived $saveCreditNoteReceived
+     * @return CreditNoteReceivedDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function createCreditNoteReceived(SaveCreditNoteReceived $saveCreditNoteReceived)
+    {
+        $allData = $this->handleRequest('creditnote_received', Connector::POST, $saveCreditNoteReceived->toArray());
+        return new CreditNoteReceivedDetail($allData);
+    }
+
+    /**
+     * @param $id
+     * @param SaveCreditNoteReceived $saveCreditNoteReceived
+     * @return CreditNoteReceivedDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function updateCreditNoteReceived($id, SaveCreditNoteReceived $saveCreditNoteReceived)
+    {
+        $allData = $this->handleRequest('creditnote_received/' . $id, Connector::PUT, $saveCreditNoteReceived->toArray());
+        return new CreditNoteReceivedDetail($allData);
+    }
+
+    /**
+     * @param $id
+     * @return CreditNoteReceivedDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function getCreditNoteReceivedDetail($id)
+    {
+        $allData = $this->handleRequest('creditnote_received/' . $id, Connector::GET);
+        return new CreditNoteReceivedDetail($allData);
+    }
+
+    /**
+     * @param $id
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function deleteCreditNoteReceived($id)
+    {
+        $this->handleRequest('creditnote_received/' . $id, Connector::DELETE);
+    }
+
+
+
+    /**
+     *
+     * @param array $params
+     * @param int|null $page
+     * @param int|null $pageSize
+     * @return BusinessPremisesOverview[] - 2-úrovňové pole.
+     *      První úroveň tvoří klíč typ dokladu a pod indexem \IUcto\Parser::PAGE_COUNT je počet dostupných stránek
+     * @throws BadRequestException
+     * @throws ConnectionException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws PaymentRequiredException
+     * @throws ServerException
+     * @throws UnautorizedException
+     * @throws ValidationException
+     */
+    public function getBusinessPremisesList($params = [], $page = null, $pageSize = null)
+    {
+        if (isset($page) && isset($pageSize)) {
+            $params['page'] = $page;
+            $params['pageSize'] = $pageSize;
+        }
+        $allData = $this->handleRequest('business_premises', Connector::GET, $params);
+        $pageCount = $allData[Parser::PAGE_COUNT];
+        unset($allData[Parser::PAGE_COUNT]);
+        $allRows = array();
+        $allRows[Parser::PAGE_COUNT] = $pageCount;
+        $allRows['business_premises'] = [];
+        foreach ($allData['business_premises'] as $data) {
+            if (isset($data['href'])) {
+                continue;
+            }
+            $businessPremisesOverview = new BusinessPremisesOverview($data);
+            $allRows['business_premises'][$businessPremisesOverview->getId()] = $businessPremisesOverview;
+        }
+
+        return $allRows;
+    }
+
+
+    /**
+     * @param $id
+     * @return BusinessPremisesDetail
+     * @throws BadRequestException
+     * @throws ConnectionException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws PaymentRequiredException
+     * @throws ServerException
+     * @throws UnautorizedException
+     * @throws ValidationException
+     */
+    public function getBusinessPremisesDetail($id)
+    {
+        $allData = $this->handleRequest('business_premises/' . $id, Connector::GET);
+        return new BusinessPremisesDetail($allData);
+    }
+
+    /**
+     *
+     * @param array $params
+     * @param int|null $page
+     * @param int|null $pageSize
+     * @return EetStatusOverview[] - 2-úrovňové pole.
+     *      První úroveň tvoří klíč typ dokladu a pod indexem \IUcto\Parser::PAGE_COUNT je počet dostupných stránek
+     * @throws BadRequestException
+     * @throws ConnectionException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws PaymentRequiredException
+     * @throws ServerException
+     * @throws UnautorizedException
+     * @throws ValidationException
+     */
+    public function getEetStatusList($params = [], $page = null, $pageSize = null)
+    {
+        if (isset($page) && isset($pageSize)) {
+            $params['page'] = $page;
+            $params['pageSize'] = $pageSize;
+        }
+        $allData = $this->handleRequest('eet_status', Connector::GET, $params);
+        $pageCount = $allData[Parser::PAGE_COUNT];
+        unset($allData[Parser::PAGE_COUNT]);
+        $allRows = array();
+        $allRows[Parser::PAGE_COUNT] = $pageCount;
+        $allRows['eet_status'] = [];
+        foreach ($allData['eet_status'] as $data) {
+            if (isset($data['href'])) {
+                continue;
+            }
+            $eetStatusOverview = new EetStatusOverview($data);
+            $allRows['eet_status'][$eetStatusOverview->getId()] = $eetStatusOverview;
+        }
+
+        return $allRows;
+    }
+
+    /**
+     * @param SaveEetStatus $saveEetStatus
+     * @return EetStatusDetail
+     * @throws ConnectionException
+     * @throws ValidationException
+     */
+    public function createEetStatus(SaveEetStatus $saveEetStatus)
+    {
+        $allData = $this->handleRequest('eet_status', Connector::POST, $saveEetStatus->toArray());
+        return new EetStatusDetail($allData);
+    }
+
+
+    /**
+     * @param $id
+     * @return EetStatusDetail
+     * @throws BadRequestException
+     * @throws ConnectionException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws PaymentRequiredException
+     * @throws ServerException
+     * @throws UnautorizedException
+     * @throws ValidationException
+     */
+    public function getEetStatusDetail($id)
+    {
+        $allData = $this->handleRequest('eet_status/' . $id, Connector::GET);
+        return new EetStatusDetail($allData);
+    }
 }
