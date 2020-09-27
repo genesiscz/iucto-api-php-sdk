@@ -2,17 +2,15 @@
 
 namespace IUcto\Command;
 
-use IUcto;
-use IUcto\Dto\PaymentItem;
+use IUcto\Dto\DocumentItem;
 use IUcto\Utils;
 
 /**
  * Comman object pro uložení dokumentu
  *
  * @author iucto.cz
- * @deprecated Použijte SavePaymentIssued a SavePaymentReceived
  */
-class SavePayment
+class SaveProformaInvoiceReceived
 {
 
     /**
@@ -20,104 +18,102 @@ class SavePayment
      *
      * @var string (42)
      */
-    protected $variableSymbol;
+    private $variableSymbol;
+
+    /**
+     * Číslo dokladu
+     * @var string (45)
+     */
+    private $sequenceCode;
+
+    /**
+     * @var string
+     */
+    private $externalCode;
 
     /**
      * Datum vystavení (povinné) (formát YYYY-mm-dd)
      *
-     * @var \DateTime
+     * @var string
      */
-    protected $date;
+    private $date;
 
     /**
      * Datum zdanitelného plnění (povinné) (formát YYYY-mm-dd)
      *
-     * @var \DateTime
+     * @var string
      */
-    protected $dateVat;
+    private $dateVat;
+
+    /**
+     * Datum splatnosti (povinné) (formát YYYY-mm-dd)
+     *
+     * @var string
+     */
+    private $maturityDate;
 
     /**
      * Měna dokladu (povinné)
-     * @see IUcto\IUcto::getCurrencies()
+     * @see \IUcto\IUcto::getCurrencies()
      *
      * @var string (3)
      */
-    protected $currency;
+    private $currency;
 
     /**
-     * Zákazník (povinné)
-     * @see IUcto\IUcto::getCustomers()
+     * Dodavetel (povinné)
+     * @see \IUcto\IUcto::getSuppliers()
      *
      * @var int
      */
-    protected $customerId;
-
-
-    protected $supplierId;
-
-    /**
-     * Bankovní účet zákazníka
-     *
-     * @var string (45)
-     */
-    protected $customerBankAccount;
+    private $supplierId;
 
     /**
      * Forma úhrady
-     * @see IUcto\IUcto::getPaymentTypes()
+     * @see \IUcto\IUcto::getPaymentTypes()
      *
      * @var int(1)
      */
-    protected $paymentType;
+    private $paymentType;
 
     /**
-     * Bankovního účet pro příjem platby (povinné pro platbu převodem)
-     * @see IUcto\IUcto::getBankAccounts()
+     * Bankovního účet pro příjem platby (povinné)
+     * @see \IUcto\IUcto::getBankAccounts()
      *
      * @var int
      */
-    protected $bankAccount;
-
-    /**
-     * Pokladna pro příjem platby (povinné pro platbu v hotovosti)
-     * @var int
-     */
-    protected $cash_register_id;
+    private $bankAccount;
 
     /**
      * Datum zdanitelného plnění (formát YYYY-mm-dd)
      *
      * @var string
      */
-    protected $dateVatPrev;
+    private $dateVatPrev;
 
     /**
      * Poznámka
      *
      * @var string
      */
-    protected $description;
+    private $description;
 
     /**
      * Způsob zaokrouhlení
      *
-     * @see IUcto\IUcto::getRoundingTypes()
+     * @see \IUcto\IUcto::getRoundingTypes()
      *
      * @var string
      */
-    protected $roundingType;
+    private $roundingType;
+
 
     /**
      * Položky dokladu (povinné)
      *
-     * @var IUcto\Dto\DocumentItem[]
+     * @var DocumentItem[]
      */
-    protected $items = array();
-
-    /**
-     * @var int|null
-     */
-    protected $invoiceId;
+    private $items = array();
 
     public function __construct(array $dataArray = [])
     {
@@ -126,22 +122,21 @@ class SavePayment
         }
 
         $this->variableSymbol = Utils::getValueOrNull($dataArray, 'variable_symbol');
-        $this->date = isset($dataArray['date']) ? Utils::getDateTimeFrom($dataArray['date']) : null;
-        $this->dateVat = isset($dataArray['date_vat']) ? Utils::getDateTimeFrom($dataArray['date_vat']) : null;
-        $this->invoiceId = Utils::getValueOrNull($dataArray, 'invoice_id');
+        $this->sequenceCode = Utils::getValueOrNull($dataArray, 'sequence_code');
+        $this->externalCode = Utils::getValueOrNull($dataArray, 'external_code');
+        $this->date = Utils::getValueOrNull($dataArray, 'date');
+        $this->dateVat = Utils::getValueOrNull($dataArray, 'date_vat');
+        $this->maturityDate = Utils::getValueOrNull($dataArray, 'maturity_date');
         $this->currency = Utils::getValueOrNull($dataArray, 'currency');
-        $this->customerId = Utils::getValueOrNull($dataArray, 'customer_id');
         $this->supplierId = Utils::getValueOrNull($dataArray, 'supplier_id');
-        $this->customerBankAccount = Utils::getValueOrNull($dataArray, 'customer_bank_account');
         $this->paymentType = Utils::getValueOrNull($dataArray, 'payment_type');
         $this->bankAccount = Utils::getValueOrNull($dataArray, 'bank_account');
-        $this->cash_register_id = Utils::getValueOrNull($dataArray, 'cash_register_id');
         $this->dateVatPrev = Utils::getValueOrNull($dataArray, 'date_vat_prev');
         $this->description = Utils::getValueOrNull($dataArray, 'description');
         $this->roundingType = Utils::getValueOrNull($dataArray, 'rounding_type');
         if (array_key_exists('items', $dataArray)) {
             foreach ($dataArray['items'] as $itemData) {
-                $this->items[] = new PaymentItem((array)$itemData);
+                $this->items[] = new DocumentItem($itemData);
             }
         }
     }
@@ -151,9 +146,6 @@ class SavePayment
         return $this->variableSymbol;
     }
 
-    /**
-     * @return \DateTime|null
-     */
     public function getDate()
     {
         return $this->date;
@@ -164,24 +156,19 @@ class SavePayment
         return $this->dateVat;
     }
 
+    public function getMaturityDate()
+    {
+        return $this->maturityDate;
+    }
+
     public function getCurrency()
     {
         return $this->currency;
     }
 
-    public function getCustomerId()
-    {
-        return $this->customerId;
-    }
-
     public function getSupplierId()
     {
         return $this->supplierId;
-    }
-
-    public function getCustomerBankAccount()
-    {
-        return $this->customerBankAccount;
     }
 
     public function getPaymentType()
@@ -192,11 +179,6 @@ class SavePayment
     public function getBankAccount()
     {
         return $this->bankAccount;
-    }
-
-    public function getCashRegisterId()
-    {
-        return $this->cash_register_id;
     }
 
     public function getDateVatPrev()
@@ -219,23 +201,6 @@ class SavePayment
         return $this->items;
     }
 
-    /**
-     * @return int|null
-     */
-    public function getInvoiceId()
-    {
-        return $this->invoiceId;
-    }
-
-    /**
-     * @param int|null $invoiceId
-     */
-    public function setInvoiceId($invoiceId)
-    {
-        $this->invoiceId = $invoiceId;
-    }
-
-
     public function setVariableSymbol($variableSymbol)
     {
         $this->variableSymbol = $variableSymbol;
@@ -243,20 +208,29 @@ class SavePayment
 
     /**
      *
-     * @param \DateTime $date
+     * @param int|\DateTime $input unix timestamp or DateTime object
      */
-    public function setDate(\DateTime $date)
+    public function setDate($input)
     {
-        $this->date = $date;
+        $this->date = Utils::getDateTimeFrom($input)->format('Y-m-d');
     }
 
     /**
      *
-     * @param \DateTime $dateVat
+     * @param int|\DateTime $input unix timestamp or DateTime object
      */
-    public function setDateVat(\DateTime $dateVat)
+    public function setDateVat($input)
     {
-        $this->dateVat = $dateVat;
+        $this->dateVat = Utils::getDateTimeFrom($input)->format('Y-m-d');
+    }
+
+    /**
+     *
+     * @param int|\DateTime $input unix timestamp or DateTime object
+     */
+    public function setMaturityDate($input)
+    {
+        $this->maturityDate = Utils::getDateTimeFrom($input)->format('Y-m-d');
     }
 
     public function setCurrency($currency)
@@ -264,14 +238,9 @@ class SavePayment
         $this->currency = $currency;
     }
 
-    public function setCustomerId($customerId)
+    public function setSupplierId($supplierId)
     {
-        $this->customerId = $customerId;
-    }
-
-    public function setCustomerBankAccount($customerBankAccount)
-    {
-        $this->customerBankAccount = $customerBankAccount;
+        $this->supplierId = $supplierId;
     }
 
     public function setPaymentType($paymentType)
@@ -309,28 +278,50 @@ class SavePayment
     }
 
     /**
-     * @param int $cash_register_id
+     * @return string
      */
-    public function setCashRegisterId($cash_register_id)
+    public function getSequenceCode()
     {
-        $this->cash_register_id = $cash_register_id;
+        return $this->sequenceCode;
+    }
+
+    /**
+     * @param string $sequenceCode
+     */
+    public function setSequenceCode($sequenceCode)
+    {
+        $this->sequenceCode = $sequenceCode;
+    }
+
+    /**
+     * @return string
+     */
+    public function getExternalCode()
+    {
+        return $this->externalCode;
+    }
+
+    /**
+     * @param string $externalCode
+     */
+    public function setExternalCode($externalCode)
+    {
+        $this->externalCode = $externalCode;
     }
 
 
     public function toArray()
     {
-        $array = array(
-            'variable_symbol' => $this->variableSymbol,
-            'date' => $this->date != null ? $this->date->format('Y-m-d') : null,
-            'date_vat' => $this->dateVat != null ? $this->dateVat->format('Y-m-d') : null,
+        $array = array('variable_symbol' => $this->variableSymbol,
+            'sequence_code' => $this->sequenceCode,
+            'external_code' => $this->externalCode,
+            'date' => $this->date,
+            'date_vat' => $this->dateVat,
+            'maturity_date' => $this->maturityDate,
             'currency' => $this->currency,
-            'customer_id' => $this->customerId,
             'supplier_id' => $this->supplierId,
-            'invoice_id' => $this->invoiceId,
-            'customer_bank_account' => $this->customerBankAccount,
             'payment_type' => $this->paymentType,
             'bank_account' => $this->bankAccount,
-            'cash_register_id' => $this->cash_register_id,
             'date_vat_prev' => $this->dateVatPrev,
             'description' => $this->description,
             'rounding_type' => $this->roundingType
@@ -340,14 +331,6 @@ class SavePayment
             $array['items'][] = $item->toArray();
         }
         return $array;
-    }
-
-    /**
-     * @param int $getSupplierId
-     */
-    public function setSupplierId($getSupplierId)
-    {
-        $this->supplierId = $getSupplierId;
     }
 
 }

@@ -110,10 +110,32 @@ class SaveCreditNoteIssued
     private $roundingType;
 
     /**
+     * Datum kurzu cizí měny (formát YYYY-mm-dd)
+     *
+     * @var string
+     */
+    private $currencyDate;
+
+    /**
      * Id faktury
      * @var int|null
      */
     private $invoiceIssuedId;
+
+    /**
+     * @var bool|null
+     */
+    private $eet;
+
+    /**
+     * @var int|null
+     */
+    private $eetListId;
+
+    /**
+     * @var int|null
+     */
+    private $businessPremisesId;
 
     /**
      * Položky dokladu (povinné)
@@ -141,12 +163,16 @@ class SaveCreditNoteIssued
         $this->dateVatPrev = Utils::getValueOrNull($dataArray, 'date_vat_prev');
         $this->description = Utils::getValueOrNull($dataArray, 'description');
         $this->roundingType = Utils::getValueOrNull($dataArray, 'rounding_type');
+        $this->currencyDate = Utils::getValueOrNull($dataArray, 'currency_date');
         $this->invoiceIssuedId = Utils::getValueOrNull($dataArray, 'invoice_issued_id');
         if (array_key_exists('items', $dataArray)) {
             foreach ($dataArray['items'] as $itemData) {
                 $this->items[] = new DocumentItem($itemData);
             }
         }
+        $this->eet = Utils::getValueOrNull($dataArray, 'eet');
+        $this->eetListId = Utils::getValueOrNull($dataArray, 'eet_list_id');
+        $this->businessPremisesId = Utils::getValueOrNull($dataArray, 'business_premises_id');
     }
 
     public function getVariableSymbol()
@@ -207,6 +233,11 @@ class SaveCreditNoteIssued
     public function getRoundingType()
     {
         return $this->roundingType;
+    }
+
+    public function getCurrencyDate()
+    {
+        return $this->currencyDate;
     }
 
     public function getItems()
@@ -290,6 +321,11 @@ class SaveCreditNoteIssued
         $this->roundingType = $roundingType;
     }
 
+    public function setCurrencyDate($currencyDate)
+    {
+        $this->currencyDate = $currencyDate;
+    }
+
     public function setItems(array $items)
     {
         $this->items = $items;
@@ -327,6 +363,53 @@ class SaveCreditNoteIssued
         $this->invoiceIssuedId = $invoiceIssuedId;
     }
 
+    /**
+     * @return bool|null
+     */
+    public function getEet()
+    {
+        return $this->eet;
+    }
+
+    /**
+     * @param bool|null $eet
+     */
+    public function setEet($eet)
+    {
+        $this->eet = $eet;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getEetListId()
+    {
+        return $this->eetListId;
+    }
+
+    /**
+     * @param int|null $eetListId
+     */
+    public function setEetListId($eetListId)
+    {
+        $this->eetListId = $eetListId;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getBusinessPremisesId()
+    {
+        return $this->businessPremisesId;
+    }
+
+    /**
+     * @param int|null $businessPremisesId
+     */
+    public function setBusinessPremisesId($businessPremisesId)
+    {
+        $this->businessPremisesId = $businessPremisesId;
+    }
 
     public function toArray()
     {
@@ -343,7 +426,11 @@ class SaveCreditNoteIssued
             'date_vat_prev' => $this->dateVatPrev,
             'description' => $this->description,
             'rounding_type' => $this->roundingType,
+            'currency_date' => $this->currencyDate,
             'invoice_issued_id' => $this->invoiceIssuedId,
+            'eet' => $this->eet,
+            'eet_list_id' => $this->eetListId,
+            'business_premises_id' => $this->businessPremisesId,
         );
         $array['items'] = array();
         foreach ($this->items as $item) {
